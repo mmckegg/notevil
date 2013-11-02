@@ -28,7 +28,7 @@ var result = safeEval('1+f(2,3)+x', {
 console.log(result) // 107
 
 // multiple statements, variables and if statements
-var result = safeEval('var x = 100, y = 200; if (x > y) { "cats" } else { "dogs" })
+var result = safeEval('var x = 100, y = 200; if (x > y) { "cats" } else { "dogs" }')
 console.log(result) // 107
 
 // update context object
