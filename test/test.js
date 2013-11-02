@@ -21,6 +21,11 @@ test('if statement', function(t){
   t.end()
 })
 
+test('ternary operator', function(t){
+  t.equal(run('x == 3 ? "cats" : "dogs"', {x: 3}), "cats")
+  t.end()
+})
+
 test('update context', function(t){
   var context = { x: 1, o: {val: 10} }
   run('var key = "val"; x = 4 * 4; o[key] = 20', context)
