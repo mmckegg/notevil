@@ -33,6 +33,6 @@ console.log(result) // cats
 
 // update context object
 var context = { x: 1 }
-safeEval('x = 300')
+safeEval('x = 300', context)
 console.log(context.x) // 300
 ```
