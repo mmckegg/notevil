@@ -33,3 +33,9 @@ test('update context', function(t){
   t.equal(context.o.val, 20)
   t.end()
 })
+
+test('object', function(t){
+  t.deepEqual(run('x = {"test": 1}'), {test: 1})
+  t.deepEqual(run('x = {test: 1}'), {test: 1})
+  t.end()
+})
