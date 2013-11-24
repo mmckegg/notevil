@@ -49,3 +49,10 @@ console.log(context.x) // 1
 safeEval('obj.y = 300', context)
 console.log(context.obj.y) // 300
 ```
+
+### Creating functions
+```js
+var func = safeEval.Function('param', 'return param * 100')
+var result = func(2)
+console.log(result) // 200
+```

@@ -11,6 +11,19 @@ module.exports = function(js, parentContext){
   return evaluateAst(tree, context)
 }
 
+module.exports.Function = function(){
+  var js = Array.prototype.slice.call(arguments, -1)[0]
+  var args = Array.prototype.slice.call(arguments, 0, -1)
+
+
+  if (typeof js === 'string'){
+    //HACK: esprima doesn't like returns outside functions
+    js = parse('function a(){' + js + '}').body[0].body
+  }
+
+  return getFunction(js, args, {})
+}
+
 function evaluateAst(tree, context){
   function wtf(node){
     console.error(node)
@@ -197,6 +210,7 @@ function getFunction(body, params, parentContext){
   return function(){
     var context = Object.create(parentContext)
     context['this'] = this
+    context['arguments'] = arguments
     for (var i=0;i<arguments.length;i++){
       if (params[i]){
         context[params[i]] = arguments[i]
