@@ -132,15 +132,14 @@ function evaluateAst(tree, context){
       if (node.callee.type === 'MemberExpression'){
         object = walk(node.callee.object)
       }
-
-      return invoke(target, object, args)
+      return target.apply(object, args)
     } else if (node.type === 'MemberExpression') {
       var obj = walk(node.object);
       if (node.computed){
         var prop = walk(node.property)
-        return obj[prop]
+        return checkValue(obj[prop])
       } else {
-        return obj[node.property.name];
+        return checkValue(obj[node.property.name]);
       }
     } else if (node.type === 'ConditionalExpression') {
       var val = walk(node.test)
@@ -149,11 +148,11 @@ function evaluateAst(tree, context){
     else return wtf(node);
   }
 
-  function invoke(func, context, args){
-    if (func === Function){
-      func = safeFunction
+  function checkValue(value){
+    if (value === Function){
+      value = safeFunction
     }
-    return func.apply(context, args)
+    return value
   }
 
   function setValue(object, left, right, operator){

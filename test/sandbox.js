@@ -25,3 +25,9 @@ test('try to access this via constructor', function(t){
   t.equal(result, null)
   t.end()
 })
+
+test('try to access this via constructor and bind', function(t){
+  var result = safeEval("[].slice.constructor.bind()('return this')()")
+  t.equal(result, null)
+  t.end()
+})
