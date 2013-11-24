@@ -1,6 +1,6 @@
 {
   "name": "notevil",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Safely evalulate javascript using esprima and static-eval",
   "main": "index.js",
   "scripts": {
