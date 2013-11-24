@@ -1,7 +1,12 @@
 var parse = require('esprima').parse
 
 module.exports = function(js, parentContext){
-  var tree = parse(js)
+  var tree = js
+
+  if (typeof js === 'string'){
+    tree = parse(js)
+  }
+
   var context = Object.create(parentContext || {})
   return evaluateAst(tree, context)
 }
