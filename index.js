@@ -51,6 +51,10 @@ function evaluateAst(tree, context){
       } else {
         return walk(node.alternate)
       }
+    } else if (node.type == 'ForStatement'){
+      for (walk(node.init); walk(node.test); walk(node.update)){
+        walk(node.body)
+      }
     } else if (node.type === 'Literal') {
       return node.value
     } else if (node.type === 'UnaryExpression'){

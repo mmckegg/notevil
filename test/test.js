@@ -70,3 +70,8 @@ test('+=, -=', function(t){
   t.end()
 })
 
+test('for', function(t){
+  var code = 'var items = [1,2,3,4]; var result = []; for (var i=0;i<items.length;i++){ result.push(items[i]*100) } result'
+  t.deepEqual(run(code), [100, 200, 300, 400])
+  t.end()
+})
