@@ -91,6 +91,8 @@ function evaluateAst(tree, context){
       if (op === '||') return l || r;
 
       return wtf(node)
+    } else if (node.type == 'ThisExpression'){
+      return context['this']
     } else if (node.type === 'Identifier') {
       return context[node.name]
     } else if (node.type === 'CallExpression') {
@@ -168,6 +170,7 @@ function canSetProperty(object, property){
 function getFunction(body, params, parentContext){
   return function(){
     var context = Object.create(parentContext)
+    context['this'] = this
     for (var i=0;i<arguments.length;i++){
       if (params[i]){
         context[params[i]] = arguments[i]

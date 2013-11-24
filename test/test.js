@@ -52,3 +52,12 @@ test('inner functions', function(t){
   t.deepEqual(run(code), [100, 200, 300, 400])
   t.end()
 })
+
+test('this', function(t){
+  t.equal(run('this', {this: 'test'}), 'test')
+  t.equal(run('this'), undefined)
+  t.equal(run('o = {f: function(){return this}, v: "test"}; o.f()').v, 'test')
+  t.equal(run('f = function(){return this.toString()}; f.apply("test")'), 'test')
+  t.end()
+})
+
