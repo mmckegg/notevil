@@ -126,14 +126,43 @@ function evaluateAst(tree, context){
     if (left.type == 'Identifier'){
       name = left.name
     } else if (left.type == 'MemberExpression'){
-      name = walk(left.property)
+      if (left.computed){
+        name = walk(left.property)
+      } else {
+        name = left.property.name
+      }
       object = walk(left.object)
     }
 
-    return object[name] = value
+
+    // stop built in properties from being able to be changed
+    if (canSetProperty(object, name)){
+      return object[name] = value
+    }
+
   }
 
   return walk(tree)
+}
+
+function canSetProperty(object, property){
+  if (property === '__proto__'){
+    return false
+  } else if (object != null){
+
+    if (object.hasOwnProperty(property)){
+      if (object.propertyIsEnumerable(property)){
+        return true
+      } else {
+        return false
+      }
+    } else {
+      return canSetProperty(Object.getPrototypeOf(object), property)
+    }
+
+  } else {
+    return true
+  }
 }
 
 function getFunction(body, params, parentContext){

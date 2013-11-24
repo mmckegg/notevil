@@ -1,0 +1,22 @@
+var safeEval = require('../')
+var test = require('tape')
+
+test('attempt override prototype method', function(t){
+  var original = Array.prototype.map
+  safeEval('Array.prototype.map = function(){ return "HACK" }', {
+    Array: Array
+  })
+  t.equal(Array.prototype.map, original, 'prototype method not changed')
+  t.end()
+})
+
+test('attempt to set __proto__', function(t){
+  var x = ['test']
+  var original = Object.getPrototypeOf(x)
+  safeEval('x.__proto__ = {newProto: true}', {
+    x: original
+  })
+  console.log(x.__proto__)
+  t.equal(Object.getPrototypeOf(x), original, '__proto__ not changed')
+  t.end()
+})
