@@ -36,6 +36,6 @@ test('update context', function(t){
 
 test('object', function(t){
   t.deepEqual(run('x = {"test": 1}'), {test: 1})
-  t.deepEqual(run('x = {test: 1}'), {test: 1})
+  t.deepEqual(run('x = {test: -1}'), {test: -1})
   t.end()
 })
