@@ -29,7 +29,7 @@ test('ternary operator', function(t){
 test('update context', function(t){
   var context = { x: 1, o: {val: 10} }
   run('var key = "val"; x = 4 * 4; o[key] = 20', context)
-  t.equal(context.x, 1)
+  t.equal(context.x, 16)
   t.equal(context.o.val, 20)
   t.end()
 })
@@ -73,5 +73,17 @@ test('+=, -=', function(t){
 test('for', function(t){
   var code = 'var items = [1,2,3,4]; var result = []; for (var i=0;i<items.length;i++){ result.push(items[i]*100) } result'
   t.deepEqual(run(code), [100, 200, 300, 400])
+  t.end()
+})
+
+test('inner context parent', function(t){
+  var code = 'var result = 0; [1,2,3,4].forEach(function(item){ result += item }); result'
+  t.equal(run(code), 10)
+  t.end()
+})
+
+test('inner context shadow', function(t){
+  var code = 'var result = 0; [1,2,3,4].forEach(function(item){ var result = 100 }); result'
+  t.equal(run(code), 0)
   t.end()
 })

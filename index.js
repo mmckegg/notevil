@@ -55,7 +55,11 @@ function evaluateAst(tree, context){
       return setValue(context, node.argument, null, node.operator)
     } else if (node.type == 'VariableDeclaration'){
       node.declarations.forEach(function(declaration){
-        setValue(context, declaration.id, declaration.init)
+        if (declaration.init){
+          context[declaration.id.name] = walk(declaration.init)
+        } else {
+          context[declaration.id.name] = undefined
+        }
       })
     } else if (node.type == 'IfStatement'){
       if (walk(node.test)){
@@ -156,6 +160,10 @@ function evaluateAst(tree, context){
 
     if (left.type == 'Identifier'){
       name = left.name
+
+      // handle parent context shadowing
+      object = objectForKey(object, name)
+
     } else if (left.type == 'MemberExpression'){
       if (left.computed){
         name = walk(left.property)
@@ -183,6 +191,15 @@ function evaluateAst(tree, context){
   }
 
   return walk(tree)
+}
+
+function objectForKey(object, key){
+  var proto = Object.getPrototypeOf(object)
+  if (!proto || object.hasOwnProperty(key)){
+    return object
+  } else {
+    return objectForKey(proto, key)
+  }
 }
 
 function canSetProperty(object, property){
