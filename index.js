@@ -109,11 +109,12 @@ function evaluateAst(tree, context){
       return target.apply(object, args)
     } else if (node.type === 'MemberExpression') {
       var obj = walk(node.object);
-      if (node.property.type === 'Identifier') {
+      if (node.computed){
+        var prop = walk(node.property)
+        return obj[prop]
+      } else {
         return obj[node.property.name];
       }
-      var prop = walk(node.property);
-      return obj[prop];
     } else if (node.type === 'ConditionalExpression') {
       var val = walk(node.test)
       return val ? walk(node.consequent) : walk(node.alternate)
