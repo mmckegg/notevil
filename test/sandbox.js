@@ -16,7 +16,6 @@ test('attempt to set __proto__', function(t){
   safeEval('x.__proto__ = {newProto: true}', {
     x: original
   })
-  console.log(x.__proto__)
   t.equal(Object.getPrototypeOf(x), original, '__proto__ not changed')
   t.end()
 })

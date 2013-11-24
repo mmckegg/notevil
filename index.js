@@ -150,7 +150,6 @@ function evaluateAst(tree, context){
   }
 
   function invoke(func, context, args){
-    "use strict";
     if (func === Function){
       func = safeFunction
     }
