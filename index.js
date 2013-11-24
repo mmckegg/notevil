@@ -21,6 +21,11 @@ function evaluateAst(tree, context){
     if (node.type == 'Program' || node.type == 'BlockStatement'){
       var result = null
       for (var i=0;i<node.body.length;i++){
+
+        if (node.type === 'EmptyStatement') {
+          continue
+        }
+
         result = walk(node.body[i])
       }
       return result
