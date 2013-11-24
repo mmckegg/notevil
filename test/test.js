@@ -61,3 +61,12 @@ test('this', function(t){
   t.end()
 })
 
+test('+=, -=', function(t){
+  t.equal(run('var a = 1; a += 1; a'), 2)
+  t.equal(run('var a = 1; a -= 1'), 0)
+  t.equal(run('var a = 1; a++'), 1)
+  t.equal(run('var a = 1; a++; a'), 2)
+  t.equal(run('var a = 1; a--; a'), 0)
+  t.end()
+})
+

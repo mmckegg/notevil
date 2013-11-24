@@ -14,7 +14,7 @@ module.exports = function(js, parentContext){
 function evaluateAst(tree, context){
   function wtf(node){
     console.error(node)
-    throw new Error('Unsupported expression.')
+    throw new Error('Unsupported expression')
   }
 
   function walk(node){
@@ -38,13 +38,15 @@ function evaluateAst(tree, context){
     } else if (node.type == 'ExpressionStatement'){
       return walk(node.expression)
     } else if (node.type == 'AssignmentExpression'){
-      return setValue(context, node.left, node.right)
+      return setValue(context, node.left, node.right, node.operator)
+    } else if (node.type == 'UpdateExpression'){
+      return setValue(context, node.argument, null, node.operator)
     } else if (node.type == 'VariableDeclaration'){
       node.declarations.forEach(function(declaration){
         setValue(context, declaration.id, declaration.init)
       })
     } else if (node.type == 'IfStatement'){
-      if (walk(node.test, context)){
+      if (walk(node.test)){
         return walk(node.consequent)
       } else {
         return walk(node.alternate)
@@ -53,10 +55,11 @@ function evaluateAst(tree, context){
       return node.value
     } else if (node.type === 'UnaryExpression'){
       var val = walk(node.argument)
-      if (node.operator === '+') return +val
-      if (node.operator === '-') return -val
-      if (node.operator === '~') return ~val
-      if (node.operator === '!') return !val
+      var op = node.operator;
+      if (op === '+') return +val
+      if (op === '-') return -val
+      if (op === '~') return ~val
+      if (op === '!') return !val
       return wtf(node)
     } else if (node.type === 'ArrayExpression') {
       var xs = [];
@@ -132,9 +135,8 @@ function evaluateAst(tree, context){
     else return wtf(node);
   }
 
-  function setValue(object, left, right){
+  function setValue(object, left, right, operator){
     var name = null
-    var value = walk(right)
 
     if (left.type == 'Identifier'){
       name = left.name
@@ -147,10 +149,19 @@ function evaluateAst(tree, context){
       object = walk(left.object)
     }
 
-
     // stop built in properties from being able to be changed
     if (canSetProperty(object, name)){
-      return object[name] = value
+      if (!operator || operator === '='){
+        return object[name] = walk(right)
+      } else if (operator === '+='){
+        return object[name] += walk(right)
+      } else if (operator === '-='){
+        return object[name] -= walk(right)
+      } else if (operator === '++'){
+        return object[name]++
+      } else if (operator === '--'){
+        return object[name]--
+      }
     }
 
   }
