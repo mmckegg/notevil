@@ -46,3 +46,9 @@ test('undefined exceptions', function(t){
   })
   t.end()
 })
+
+test('inner functions', function(t){
+  var code = '[1,2,3,4].map(function(item){ return item*100 })'
+  t.deepEqual(run(code), [100, 200, 300, 400])
+  t.end()
+})

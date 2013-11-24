@@ -1,14 +1,14 @@
 var parse = require('esprima').parse
 
-module.exports = function(js, context){
+module.exports = function(js, parentContext){
   var tree = parse(js)
+  var context = Object.create(parentContext || {})
   return evaluateAst(tree, context)
 }
 
-function evaluateAst(tree, parentContext){
-  var context = Object.create(parentContext || {})
-
-  function wtf(){
+function evaluateAst(tree, context){
+  function wtf(node){
+    console.error(node)
     throw new Error('Unsupported expression.')
   }
 
@@ -19,6 +19,12 @@ function evaluateAst(tree, parentContext){
         result = walk(node.body[i])
       }
       return result
+    } else if (node.type == 'FunctionExpression'){
+      var params = node.params.map(getName)
+      return getFunction(node.body, params, context)
+    } else if (node.type == 'ReturnStatement'){
+      var value = walk(node.argument)
+      return new ReturnValue(value)
     } else if (node.type == 'ExpressionStatement'){
       return walk(node.expression)
     } else if (node.type == 'AssignmentExpression'){
@@ -93,7 +99,12 @@ function evaluateAst(tree, parentContext){
         var x = walk(node.arguments[i]);
         args.push(x);
       }
-      return context[node.callee.name].apply(null, args);
+      var object = null
+      var target = walk(node.callee)
+      if (node.callee.type === 'MemberExpression'){
+        object = walk(node.callee.object)
+      }
+      return target.apply(object, args)
     } else if (node.type === 'MemberExpression') {
       var obj = walk(node.object);
       if (node.property.type === 'Identifier') {
@@ -123,4 +134,27 @@ function evaluateAst(tree, parentContext){
   }
 
   return walk(tree)
+}
+
+function getFunction(body, params, parentContext){
+  return function(){
+    var context = Object.create(parentContext)
+    for (var i=0;i<arguments.length;i++){
+      if (params[i]){
+        context[params[i]] = arguments[i]
+      }
+    }
+    var result = evaluateAst(body, context)
+    if (result instanceof ReturnValue){
+      return result.value
+    }
+  }
+}
+
+function getName(identifier){
+  return identifier.name
+}
+
+function ReturnValue(value){
+  this.value = value
 }

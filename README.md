@@ -3,7 +3,7 @@ notevil
 
 Evalulate javascript like the built-in javascript `eval()` method but **safely**. 
 
-This module uses [esprima](https://github.com/ariya/esprima) and [static-eval](https://github.com/substack/static-eval) to parse and evaluate the passed in javascript. 
+This module uses [esprima](https://github.com/ariya/esprima) to parse the javascript AST then walks each node and evaluates the result. 
 
 Like built-in `eval`, the result of the last expression will be returned. Unlike built-in, there is no access to global objects, only the context that is passed in as the second object.
 
@@ -30,6 +30,10 @@ console.log(result) // 107
 // multiple statements, variables and if statements
 var result = safeEval('var x = 100, y = 200; if (x > y) { "cats" } else { "dogs" }')
 console.log(result) // dogs
+
+// inner functions
+var result = safeEval('[1,2,3,4].map(function(item){ return item*100 })')
+console.log(result) // [100, 200, 300, 400]
 ```
 
 ### Updating context from safeEval

@@ -1,7 +1,7 @@
 {
   "name": "notevil",
   "version": "0.1.0",
-  "description": "Safely evalulate javascript using esprima and static-eval",
+  "description": "Evalulate javascript like the built-in eval() method but safely",
   "main": "index.js",
   "scripts": {
     "test": "tap test/*.js"
