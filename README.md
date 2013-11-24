@@ -30,9 +30,18 @@ console.log(result) // 107
 // multiple statements, variables and if statements
 var result = safeEval('var x = 100, y = 200; if (x > y) { "cats" } else { "dogs" }')
 console.log(result) // dogs
+```
 
-// update context object
-var context = { x: 1 }
+### Updating context from safeEval
+
+```js
+var context = { x: 1, obj: {y: 2} }
+
+// attempt to update global
 safeEval('x = 300', context)
-console.log(context.x) // 300
+console.log(context.x) // 1
+
+// update property on object
+safeEval('obj.y = 300', context)
+console.log(context.obj.y) // 300
 ```

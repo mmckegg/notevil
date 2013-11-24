@@ -29,7 +29,7 @@ test('ternary operator', function(t){
 test('update context', function(t){
   var context = { x: 1, o: {val: 10} }
   run('var key = "val"; x = 4 * 4; o[key] = 20', context)
-  t.equal(context.x, 4*4)
+  t.equal(context.x, 1)
   t.equal(context.o.val, 20)
   t.end()
 })
@@ -37,5 +37,12 @@ test('update context', function(t){
 test('object', function(t){
   t.deepEqual(run('x = {"test": 1}'), {test: 1})
   t.deepEqual(run('x = {test: -1}'), {test: -1})
+  t.end()
+})
+
+test('undefined exceptions', function(t){
+  t.throws(function(){
+    run('y.u.no.error')
+  })
   t.end()
 })

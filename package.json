@@ -23,8 +23,7 @@
     "url": "https://github.com/mmckegg/notevil/issues"
   },
   "dependencies": {
-    "static-eval": "0.0.0",
-    "esprima": "~1.0.4"
+    "esprima": "~1.0"
   },
   "devDependencies": {
     "tape": "*"
