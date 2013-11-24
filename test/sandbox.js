@@ -20,3 +20,9 @@ test('attempt to set __proto__', function(t){
   t.equal(Object.getPrototypeOf(x), original, '__proto__ not changed')
   t.end()
 })
+
+test('try to access this via constructor', function(t){
+  var result = safeEval("[].slice.constructor('return this')()")
+  t.equal(result, null)
+  t.end()
+})

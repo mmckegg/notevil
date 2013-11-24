@@ -10,20 +10,13 @@ module.exports = function(js, parentContext){
   return evaluateAst(js, context)
 }
 
-module.exports.Function = function(){
-  var js = Array.prototype.slice.call(arguments, -1)[0]
-  var args = Array.prototype.slice.call(arguments, 0, -1)
-
-
-  if (typeof js === 'string'){
-    //HACK: esprima doesn't like returns outside functions
-    js = parse('function a(){' + js + '}').body[0].body
-  }
-
-  return getFunction(js, args, {})
-}
+module.exports.FunctionFactory = FunctionFactory
+module.exports.Function = FunctionFactory({})
 
 function evaluateAst(tree, context){
+
+  var safeFunction = FunctionFactory(context)
+
   function wtf(node){
     console.error(node)
     throw new Error('Unsupported expression')
@@ -139,7 +132,8 @@ function evaluateAst(tree, context){
       if (node.callee.type === 'MemberExpression'){
         object = walk(node.callee.object)
       }
-      return target.apply(object, args)
+
+      return invoke(target, object, args)
     } else if (node.type === 'MemberExpression') {
       var obj = walk(node.object);
       if (node.computed){
@@ -153,6 +147,14 @@ function evaluateAst(tree, context){
       return val ? walk(node.consequent) : walk(node.alternate)
     }
     else return wtf(node);
+  }
+
+  function invoke(func, context, args){
+    "use strict";
+    if (func === Function){
+      func = safeFunction
+    }
+    return func.apply(context, args)
   }
 
   function setValue(object, left, right, operator){
@@ -225,7 +227,11 @@ function canSetProperty(object, property){
 function getFunction(body, params, parentContext){
   return function(){
     var context = Object.create(parentContext)
-    context['this'] = this
+    if (this == global){
+      context['this'] = null
+    } else {
+      context['this'] = this
+    }
     context['arguments'] = arguments
     for (var i=0;i<arguments.length;i++){
       if (params[i]){
@@ -245,4 +251,18 @@ function getName(identifier){
 
 function ReturnValue(value){
   this.value = value
+}
+
+function FunctionFactory(context){
+  return function(){
+    var js = Array.prototype.slice.call(arguments, -1)[0]
+    var args = Array.prototype.slice.call(arguments, 0, -1)
+
+    if (typeof js === 'string'){
+      //HACK: esprima doesn't like returns outside functions
+      js = parse('function a(){' + js + '}').body[0].body
+    }
+
+    return getFunction(js, args, context)
+  }
 }
