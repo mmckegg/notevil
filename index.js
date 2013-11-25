@@ -1,6 +1,7 @@
 var parse = require('esprima').parse
 var hoist = require('./lib/hoist')
 var InfiniteChecker = require('./lib/infinite-checker')
+var Primatives = require('./lib/primatives')
 
 module.exports = safeEval
 module.exports.eval = safeEval
@@ -43,6 +44,7 @@ function prepareAst(src){
 function evaluateAst(tree, context){
 
   var safeFunction = FunctionFactory(context)
+  var primatives = Primatives(context)
 
   return walk(tree)
 
@@ -182,12 +184,14 @@ function evaluateAst(tree, context){
         }
       
       case 'ArrayExpression':
-        return node.elements.map(function(element){
-          return walk(element)
-        })
+        var obj = context['Array']()
+        for (var i=0;i<node.elements.length;i++){
+          obj.push(walk(node.elements[i]))
+        }
+        return obj
       
       case 'ObjectExpression':
-        var obj = {}
+        var obj = context['Object']()
         for (var i = 0; i < node.properties.length; i++) {
           var prop = node.properties[i]
           var value = (prop.value === null) ? prop.value : walk(prop.value)
@@ -240,6 +244,7 @@ function evaluateAst(tree, context){
         })
         var object = null
         var target = walk(node.callee)
+
         if (node.callee.type === 'MemberExpression'){
           object = walk(node.callee.object)
         }
@@ -249,10 +254,11 @@ function evaluateAst(tree, context){
         var obj = walk(node.object)
         if (node.computed){
           var prop = walk(node.property)
-          return checkValue(obj[prop])
         } else {
-          return checkValue(obj[node.property.name]);
+          var prop = node.property.name
         }
+        obj = primatives.getPropertyObject(obj, prop)
+        return checkValue(obj[prop]);
       
       case 'ConditionalExpression':
         var val = walk(node.test)
@@ -278,7 +284,7 @@ function evaluateAst(tree, context){
     if (left.type === 'Identifier'){
       name = left.name
       // handle parent context shadowing
-      object = objectForKey(object, name)
+      object = objectForKey(object, name, primatives)
     } else if (left.type === 'MemberExpression'){
       if (left.computed){
         name = walk(left.property)
@@ -289,7 +295,7 @@ function evaluateAst(tree, context){
     }
 
     // stop built in properties from being able to be changed
-    if (canSetProperty(object, name)){
+    if (canSetProperty(object, name, primatives)){
       switch(operator) {
         case undefined: return object[name] = walk(right)
         case '=':  return object[name] = walk(right)
@@ -311,18 +317,18 @@ function unsupportedExpression(node){
 }
 
 // walk a provided object's prototypal hierarchy to retrieve an inherited object
-function objectForKey(object, key){
-  var proto = Object.getPrototypeOf(object)
-  if (!proto || proto == Object.prototype || object.hasOwnProperty(key)){
+function objectForKey(object, key, primatives){
+  var proto = primatives.getPrototypeOf(object)
+  if (!proto || object.hasOwnProperty(key)){
     return object
   } else {
-    return objectForKey(proto, key)
+    return objectForKey(proto, key, primatives)
   }
 }
 
 // determine if we have write access to a property
-function canSetProperty(object, property){
-  if (property === '__proto__'){
+function canSetProperty(object, property, primatives){
+  if (property === '__proto__' || primatives.isPrimative(object)){
     return false
   } else if (object != null){
 
@@ -333,7 +339,7 @@ function canSetProperty(object, property){
         return false
       }
     } else {
-      return canSetProperty(Object.getPrototypeOf(object), property)
+      return canSetProperty(primatives.getPrototypeOf(object), property, primatives)
     }
 
   } else {

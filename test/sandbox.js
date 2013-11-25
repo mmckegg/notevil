@@ -52,3 +52,30 @@ test('infinite while loop', function(t){
   })
   t.end()
 })
+
+test('set wrapped string prototype', function(t){
+  var code = 'String.prototype.makeLouder = function() { return this + "!" }; "test".makeLouder()'
+  t.equal(safeEval(code), 'test!')
+  t.throws(function(){
+    "test".makeLouder()
+  }, 'original string prototype untouched')
+  t.end()
+})
+
+test('set wrapped object prototype', function(t){
+  var code = 'Object.prototype.wibblify = function() { return "~" + this.value + "~" }; ({value: "test"}).wibblify()'
+  t.equal(safeEval(code), '~test~')
+  t.throws(function(){
+    ({value: "test"}).wibblify()
+  }, 'original object prototype untouched')
+  t.end()
+})
+
+test('set wrapped object prototype by object.__proto__', function(t){
+  var code = '({}).__proto__.wibblify = function() { return "~" + this.value + "~" }; ({value: "test"}).wibblify()'
+  t.equal(safeEval(code), '~test~')
+  t.throws(function(){
+    ({value: "test"}).wibblify()
+  }, 'original object prototype untouched')
+  t.end()
+})
