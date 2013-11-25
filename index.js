@@ -13,7 +13,7 @@ var maxIterations = 1000000
 function safeEval(src, parentContext){
   var tree = prepareAst(src)
   var context = Object.create(parentContext || {})
-  return evaluateAst(tree, context)
+  return finalValue(evaluateAst(tree, context))
 }
 
 // create a 'Function' constructor for a controlled environment
@@ -49,15 +49,22 @@ function evaluateAst(tree, context){
   // recursively walk every node in an array
   function walkAll(nodes){
     var result = null
-    nodes.forEach(function(childNode){
-      if (childNode.type === 'EmptyStatement') return
+    for (var i=0;i<nodes.length;i++){
+      var childNode = nodes[i]
+      if (childNode.type === 'EmptyStatement') continue
+
       result = walk(childNode)
-    })
+
+      if (result instanceof ReturnValue){
+        return result
+      }
+    }
     return result
   }
 
   // recursively evalutate the node of an AST
   function walk(node){
+    if (!node) return
     switch (node.type) {
       
       case 'Program':
@@ -69,8 +76,7 @@ function evaluateAst(tree, context){
       case 'FunctionDeclaration':
         var params = node.params.map(getName)
         var value = getFunction(node.body, params, context)
-        setValue(context, node.id, {type: 'Literal', value: value})
-        return value
+        return context[node.id.name] = value
 
       case 'FunctionExpression':
         var params = node.params.map(getName)
@@ -78,7 +84,13 @@ function evaluateAst(tree, context){
       
       case 'ReturnStatement':
         var value = walk(node.argument)
-        return new ReturnValue(value)
+        return new ReturnValue('return', value)
+
+      case 'BreakStatement':
+        return new ReturnValue('break')
+
+      case 'ContinueStatement':
+        return new ReturnValue('continue')
       
       case 'ExpressionStatement':
         return walk(node.expression)
@@ -102,14 +114,22 @@ function evaluateAst(tree, context){
       case 'IfStatement':
         if (walk(node.test)){
           return walk(node.consequent)
-        } else {
+        } else if (node.alternate) {
           return walk(node.alternate)
         }
       
       case 'ForStatement':
         var infinite = InfiniteChecker(maxIterations)
         for (walk(node.init); walk(node.test); walk(node.update)){
-          walk(node.body)
+          var result = walk(node.body)
+
+          // handle early return, continue and break
+          if (result instanceof ReturnValue){
+            if (result.type == 'continue') continue
+            if (result.type == 'break') break
+            return result
+          }
+
           infinite.check()
         }
         break
@@ -126,7 +146,15 @@ function evaluateAst(tree, context){
 
         for (var key in value){
           setValue(context, property, {type: 'Literal', value: key})
-          walk(node.body)
+          var result = walk(node.body)
+
+          // handle early return, continue and break
+          if (result instanceof ReturnValue){
+            if (result.type == 'continue') continue
+            if (result.type == 'break') break
+            return result
+          }
+
           infinite.check()
         }
         break
@@ -195,7 +223,7 @@ function evaluateAst(tree, context){
         return context['this']
       
       case 'Identifier':
-        return context[node.name]
+        return finalValue(context[node.name])
       
       case 'CallExpression':
         var args = node.arguments.map(function(arg){
@@ -231,7 +259,7 @@ function evaluateAst(tree, context){
     if (value === Function){
       value = safeFunction
     }
-    return value
+    return finalValue(value)
   }
 
   // set a value in the specified context if allowed
@@ -323,10 +351,18 @@ function getFunction(body, params, parentContext){
       }
     })
     var result = evaluateAst(body, context)
+
     if (result instanceof ReturnValue){
       return result.value
     }
   }
+}
+
+function finalValue(value){
+  if (value instanceof ReturnValue){
+    return value.value
+  }
+  return value
 }
 
 // get the name of an identifier
@@ -335,6 +371,7 @@ function getName(identifier){
 }
 
 // a ReturnValue struct for differentiating between expression result and return statement
-function ReturnValue(value){
+function ReturnValue(type, value){
+  this.type = type
   this.value = value
 }

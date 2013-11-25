@@ -131,3 +131,20 @@ test('hoist var', function(t){
   t.equal(run('var i = 123; (function(){ i = 456; var i; })(); i'), 123)
   t.end()
 })
+
+test('early return', function(t){
+  t.equal(run('(function(x){ return "test"; return "dogs" })()'), "test")
+  t.end()
+})
+
+test('continue', function(t){
+  var code = 'var result = []; for (var i=0;i<5;i++){ if (i === 2){ continue } result.push(i) }; result'
+  t.deepEqual(run(code), [0,1,3,4])
+  t.end()
+})
+
+test('break', function(t){
+  var code = 'var result = []; for (var i=0;i<5;i++){ if (i === 3){ break } result.push(i) }; result'
+  t.deepEqual(run(code), [0,1,2])
+  t.end()
+})
