@@ -59,6 +59,12 @@ test('inner functions', function(t){
   t.end()
 })
 
+test('function declaration', function(t){
+  var code = 'function test(arg){ return arg }; test(123)'
+  t.deepEqual(run(code), 123)
+  t.end()
+})
+
 test('this', function(t){
   t.equal(run('this', {this: 'test'}), 'test')
   t.equal(run('this'), undefined)

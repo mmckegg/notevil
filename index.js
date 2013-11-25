@@ -61,7 +61,13 @@ function evaluateAst(tree, context){
       
       case 'BlockStatement':
         return walkBlock(node)
-      
+
+      case 'FunctionDeclaration':
+        var params = node.params.map(getName)
+        var value = getFunction(node.body, params, context)
+        setValue(context, node.id, {type: 'Literal', value: value})
+        return value
+
       case 'FunctionExpression':
         var params = node.params.map(getName)
         return getFunction(node.body, params, context)
