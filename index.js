@@ -215,9 +215,16 @@ function evaluateAst(tree, context){
           case '|':   return l | r
           case '&':   return l & r
           case '^':   return l ^ r
+          case 'instanceof': return l instanceof r
+          default: return unsupportedExpression(node)
+        }
+
+      case 'LogicalExpression':
+        var l = walk(node.left)
+        var r = walk(node.right)
+        switch(node.operator) {
           case '&&':  return l && r
           case '||':  return l || r
-          case 'instanceof': return l instanceof r
           default: return unsupportedExpression(node)
         }
       

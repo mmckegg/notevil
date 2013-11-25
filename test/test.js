@@ -82,6 +82,12 @@ test('+=, -=', function(t){
   t.end()
 })
 
+test('logical expression', function(t){
+  t.equal(run('123 && 456'), 456)
+  t.equal(run('0 || 456'), 456)
+  t.end()
+})
+
 test('typeof', function(t){
   t.equal(run('typeof "text"'), 'string')
   t.end()
