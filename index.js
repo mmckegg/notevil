@@ -1,5 +1,6 @@
 var parse = require('esprima').parse
-var hoist = require('./lib/hoist')
+var hoist = require('hoister')
+
 var InfiniteChecker = require('./lib/infinite-checker')
 var Primitives = require('./lib/primitives')
 
