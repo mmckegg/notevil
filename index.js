@@ -122,12 +122,12 @@ function evaluateAst(tree, context){
         if (property.type == 'VariableDeclaration'){
           walk(property)
           property = property.declarations[0].id
-          infinite.check()
         }
 
         for (var key in value){
           setValue(context, property, {type: 'Literal', value: key})
           walk(node.body)
+          infinite.check()
         }
         break
 
