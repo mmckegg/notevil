@@ -34,6 +34,12 @@ test('update context', function(t){
   t.end()
 })
 
+test('include some globals', function(t){
+  t.equal(run('JSON.stringify({test: 123})', {JSON: JSON}), JSON.stringify({test: 123}))
+  t.end()
+})
+
+
 test('object', function(t){
   t.deepEqual(run('x = {"test": 1}'), {test: 1})
   t.deepEqual(run('x = {test: -1}'), {test: -1})
@@ -105,3 +111,4 @@ test('inner context shadow', function(t){
   t.equal(run(code), 0)
   t.end()
 })
+
