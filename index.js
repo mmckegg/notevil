@@ -1,7 +1,7 @@
 var parse = require('esprima').parse
 var hoist = require('./lib/hoist')
 var InfiniteChecker = require('./lib/infinite-checker')
-var Primatives = require('./lib/primatives')
+var Primitives = require('./lib/primitives')
 
 module.exports = safeEval
 module.exports.eval = safeEval
@@ -44,7 +44,7 @@ function prepareAst(src){
 function evaluateAst(tree, context){
 
   var safeFunction = FunctionFactory(context)
-  var primatives = Primatives(context)
+  var primitives = Primitives(context)
 
   return walk(tree)
 
@@ -257,7 +257,7 @@ function evaluateAst(tree, context){
         } else {
           var prop = node.property.name
         }
-        obj = primatives.getPropertyObject(obj, prop)
+        obj = primitives.getPropertyObject(obj, prop)
         return checkValue(obj[prop]);
       
       case 'ConditionalExpression':
@@ -284,7 +284,7 @@ function evaluateAst(tree, context){
     if (left.type === 'Identifier'){
       name = left.name
       // handle parent context shadowing
-      object = objectForKey(object, name, primatives)
+      object = objectForKey(object, name, primitives)
     } else if (left.type === 'MemberExpression'){
       if (left.computed){
         name = walk(left.property)
@@ -295,7 +295,7 @@ function evaluateAst(tree, context){
     }
 
     // stop built in properties from being able to be changed
-    if (canSetProperty(object, name, primatives)){
+    if (canSetProperty(object, name, primitives)){
       switch(operator) {
         case undefined: return object[name] = walk(right)
         case '=':  return object[name] = walk(right)
@@ -317,18 +317,18 @@ function unsupportedExpression(node){
 }
 
 // walk a provided object's prototypal hierarchy to retrieve an inherited object
-function objectForKey(object, key, primatives){
-  var proto = primatives.getPrototypeOf(object)
+function objectForKey(object, key, primitives){
+  var proto = primitives.getPrototypeOf(object)
   if (!proto || object.hasOwnProperty(key)){
     return object
   } else {
-    return objectForKey(proto, key, primatives)
+    return objectForKey(proto, key, primitives)
   }
 }
 
 // determine if we have write access to a property
-function canSetProperty(object, property, primatives){
-  if (property === '__proto__' || primatives.isPrimative(object)){
+function canSetProperty(object, property, primitives){
+  if (property === '__proto__' || primitives.isPrimative(object)){
     return false
   } else if (object != null){
 
@@ -339,7 +339,7 @@ function canSetProperty(object, property, primatives){
         return false
       }
     } else {
-      return canSetProperty(primatives.getPrototypeOf(object), property, primatives)
+      return canSetProperty(primitives.getPrototypeOf(object), property, primitives)
     }
 
   } else {
