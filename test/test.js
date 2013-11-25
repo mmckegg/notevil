@@ -76,6 +76,24 @@ test('for', function(t){
   t.end()
 })
 
+test('for in', function(t){
+  var code = 'var items = [1,2,3,4]; var result = []; for (var i in items){ result.push(items[i]*100) } result'
+  t.deepEqual(run(code), [100, 200, 300, 400])
+  t.end()
+})
+
+test('for var in', function(t){
+  var code = 'var items = [1,2,3,4]; var result = []; var i; for (i in items){ result.push(items[i]*100) } result'
+  t.deepEqual(run(code), [100, 200, 300, 400])
+  t.end()
+})
+
+test('while', function(t){
+  var code = 'var items = [1,2,3,4]; var result = []; var i=0; while (i<items.length){ result.push(items[i]*100) ;i++ } result'
+  t.deepEqual(run(code), [100, 200, 300, 400])
+  t.end()
+})
+
 test('inner context parent', function(t){
   var code = 'var result = 0; [1,2,3,4].forEach(function(item){ result += item }); result'
   t.equal(run(code), 10)

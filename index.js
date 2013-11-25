@@ -101,6 +101,27 @@ function evaluateAst(tree, context){
           walk(node.body)
         }
         break
+
+      case 'ForInStatement':
+        var value = walk(node.right)
+        var property = node.left
+
+        if (property.type == 'VariableDeclaration'){
+          walk(property)
+          property = property.declarations[0].id
+        }
+
+        for (var key in value){
+          setValue(context, property, {type: 'Literal', value: key})
+          walk(node.body)
+        }
+        break
+
+      case 'WhileStatement':
+        while (walk(node.test)){
+          walk(node.body)
+        }
+        break
       
       case 'Literal':
         return node.value
@@ -239,7 +260,7 @@ function unsupportedExpression(node){
 // walk a provided object's prototypal hierarchy to retrieve an inherited object
 function objectForKey(object, key){
   var proto = Object.getPrototypeOf(object)
-  if (!proto || object.hasOwnProperty(key)){
+  if (!proto || proto == Object.prototype || object.hasOwnProperty(key)){
     return object
   } else {
     return objectForKey(proto, key)
@@ -297,7 +318,7 @@ function getName(identifier){
   return identifier.name
 }
 
-// a ReturnValue struct for differentiating between 'undefined' and 'no return' (?)
+// a ReturnValue struct for differentiating between expression result and return statement
 function ReturnValue(value){
   this.value = value
 }
