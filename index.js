@@ -1,10 +1,13 @@
 var parse = require('esprima').parse
 var hoist = require('./lib/hoist')
+var InfiniteChecker = require('./lib/infinite-checker')
 
 module.exports = safeEval
 module.exports.eval = safeEval
 module.exports.FunctionFactory = FunctionFactory
 module.exports.Function = FunctionFactory()
+
+var maxIterations = 1000000
 
 // 'eval' with a controlled environment
 function safeEval(src, parentContext){
@@ -104,18 +107,22 @@ function evaluateAst(tree, context){
         }
       
       case 'ForStatement':
+        var infinite = InfiniteChecker(maxIterations)
         for (walk(node.init); walk(node.test); walk(node.update)){
           walk(node.body)
+          infinite.check()
         }
         break
 
       case 'ForInStatement':
+        var infinite = InfiniteChecker(maxIterations)
         var value = walk(node.right)
         var property = node.left
 
         if (property.type == 'VariableDeclaration'){
           walk(property)
           property = property.declarations[0].id
+          infinite.check()
         }
 
         for (var key in value){
@@ -125,8 +132,10 @@ function evaluateAst(tree, context){
         break
 
       case 'WhileStatement':
+        var infinite = InfiniteChecker(maxIterations)
         while (walk(node.test)){
           walk(node.body)
+          infinite.check()
         }
         break
       

@@ -31,3 +31,24 @@ test('try to access this via constructor and bind', function(t){
   t.equal(result, null)
   t.end()
 })
+
+test('infinite recursion', function(t){
+  t.throws(function(){
+    safeEval('function test() { test() }; test()')
+  })
+  t.end()
+})
+
+test('infinite for loop', function(t){
+  t.throws(function(){
+    safeEval('for (;true;){}')
+  })
+  t.end()
+})
+
+test('infinite while loop', function(t){
+  t.throws(function(){
+    safeEval('while (true){}')
+  })
+  t.end()
+})
