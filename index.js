@@ -43,10 +43,10 @@ function evaluateAst(tree, context){
 
   return walk(tree)
 
-  // walk through each node of a program of block statement
-  function walkBlock(node){
+  // recursively walk every node in an array
+  function walkAll(nodes){
     var result = null
-    node.body.forEach(function(childNode){
+    nodes.forEach(function(childNode){
       if (childNode.type === 'EmptyStatement') return
       result = walk(childNode)
     })
@@ -58,10 +58,10 @@ function evaluateAst(tree, context){
     switch (node.type) {
       
       case 'Program':
-        return walkBlock(node)
+        return walkAll(node.body)
       
       case 'BlockStatement':
-        return walkBlock(node)
+        return walkAll(node.body)
 
       case 'FunctionDeclaration':
         var params = node.params.map(getName)
