@@ -82,6 +82,16 @@ test('+=, -=', function(t){
   t.end()
 })
 
+test('typeof', function(t){
+  t.equal(run('typeof "text"'), 'string')
+  t.end()
+})
+
+test('instanceof', function(t){
+  t.equal(run('var obj = {}; obj instanceof Object', {Object: Object}), true)
+  t.end()
+})
+
 test('for', function(t){
   var code = 'var items = [1,2,3,4]; var result = []; for (var i=0;i<items.length;i++){ result.push(items[i]*100) } result'
   t.deepEqual(run(code), [100, 200, 300, 400])

@@ -177,6 +177,7 @@ function evaluateAst(tree, context){
           case '-': return -val
           case '~': return ~val
           case '!': return !val
+          case 'typeof': return typeof val
           default: return unsupportedExpression(node)
         }
       
@@ -216,6 +217,7 @@ function evaluateAst(tree, context){
           case '^':   return l ^ r
           case '&&':  return l && r
           case '||':  return l || r
+          case 'instanceof': return l instanceof r
           default: return unsupportedExpression(node)
         }
       
