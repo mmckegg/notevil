@@ -7,6 +7,8 @@ This module uses [esprima](https://github.com/ariya/esprima) to parse the javasc
 
 Like built-in `eval`, the result of the last expression will be returned. Unlike built-in, there is no access to global objects, only the context that is passed in as the second object.
 
+Built in types such as `Object` and `String` are still available, but they are wrapped so that any changes to prototypes are contained in the eval instance.
+
 [![NPM](https://nodei.co/npm/notevil.png?compact=true)](https://nodei.co/npm/notevil/)
 
 ## Example
