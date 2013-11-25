@@ -118,3 +118,16 @@ test('inner context shadow', function(t){
   t.end()
 })
 
+test('hoist functions', function(t){
+  var code = 'func(test); function func(arg){ return arg }'
+  t.doesNotThrow(function(){
+    run(code)
+  }, 'should not throw')
+  t.end()
+})
+
+test('hoist var', function(t){
+  t.equal(run('var i = 123; (function(){ var result = i; var i; return result })()'), undefined)
+  t.equal(run('var i = 123; (function(){ i = 456; var i; })(); i'), 123)
+  t.end()
+})

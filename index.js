@@ -1,4 +1,5 @@
 var parse = require('esprima').parse
+var hoist = require('./lib/hoist')
 
 module.exports = safeEval
 module.exports.eval = safeEval
@@ -32,7 +33,7 @@ function FunctionFactory(parentContext){
 // takes an AST or js source and returns an AST
 function prepareAst(src){
   var tree = (typeof src === 'string') ? parse(src) : src
-  return tree
+  return hoist(tree)
 }
 
 // evaluate an AST in the given context
