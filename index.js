@@ -199,6 +199,14 @@ function evaluateAst(tree, context){
           obj[prop.key.value || prop.key.name] = value
         }
         return obj
+
+      case 'NewExpression':
+        var args = node.arguments.map(function(arg){
+          return walk(arg)
+        })
+        var target = walk(node.callee)
+        return primitives.applyNew(target, args)
+
       
       case 'BinaryExpression':
         var l = walk(node.left)
@@ -318,7 +326,7 @@ function unsupportedExpression(node){
 // walk a provided object's prototypal hierarchy to retrieve an inherited object
 function objectForKey(object, key, primitives){
   var proto = primitives.getPrototypeOf(object)
-  if (!proto || object.hasOwnProperty(key)){
+  if (!proto || hasOwnProperty(object, key)){
     return object
   } else {
     return objectForKey(proto, key, primitives)

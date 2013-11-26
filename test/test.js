@@ -170,3 +170,15 @@ test('logic operator early return', function(t){
   t.equal(run('var result = true; function fail(){ result = false } result || fail(); result'), true)
   t.end()
 })
+
+test('new', function(t){
+  var result = run('var s = new String("test1"); s.prop = "test2"; s')
+  t.equal(result.toString(), 'test1')
+  t.equal(result.prop, 'test2')
+  t.assert(result instanceof String)
+
+  var result2 = run('String.prototype.toLoud = function() { return this.toString() + "!" }; new String("test")')
+  t.equal(result2.toLoud(), 'test!')
+
+  t.end()
+})
