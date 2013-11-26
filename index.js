@@ -225,11 +225,9 @@ function evaluateAst(tree, context){
         }
 
       case 'LogicalExpression':
-        var l = walk(node.left)
-        var r = walk(node.right)
         switch(node.operator) {
-          case '&&':  return l && r
-          case '||':  return l || r
+          case '&&':  return walk(node.left) && walk(node.right)
+          case '||':  return walk(node.left) || walk(node.right)
           default: return unsupportedExpression(node)
         }
       

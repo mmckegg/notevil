@@ -164,3 +164,9 @@ test('break', function(t){
   t.deepEqual(run(code), [0,1,2])
   t.end()
 })
+
+test('logic operator early return', function(t){
+  t.equal(run('var result = false; function fail(){ result = true } result && fail(); result'), false)
+  t.equal(run('var result = true; function fail(){ result = false } result || fail(); result'), true)
+  t.end()
+})
