@@ -182,3 +182,11 @@ test('new', function(t){
 
   t.end()
 })
+
+test('try statement', function(t){
+  t.deepEqual(run('var error; try{ __fail__.fail__() } catch(e) { error = e }; error'), ReferenceError())
+  t.throws(function(){
+    run('var error; try{ __fail__.fail__() } catch(e) { error = e }; e')
+  })
+  t.end()
+})

@@ -169,6 +169,22 @@ function evaluateAst(tree, context){
           infinite.check()
         }
         break
+
+      case 'TryStatement':
+        try {
+          walk(node.block)
+        } catch (error) {
+          var catchClause = node.handlers[0]
+          if (catchClause) {
+            context[catchClause.param.name] = error
+            walk(catchClause.body)
+          }
+        } finally {
+          if (node.finalizer) {
+            walk(node.finalizer)
+          }
+        }
+        break
       
       case 'Literal':
         return node.value
