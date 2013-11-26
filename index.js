@@ -325,14 +325,23 @@ function objectForKey(object, key, primitives){
   }
 }
 
+function hasOwnProperty(object, key){
+  return Object.prototype.hasOwnProperty.call(object, key)
+}
+
+function propertyIsEnumerable(object, key){
+  return Object.prototype.propertyIsEnumerable.call(object, key)
+}
+
+
 // determine if we have write access to a property
 function canSetProperty(object, property, primitives){
   if (property === '__proto__' || primitives.isPrimative(object)){
     return false
   } else if (object != null){
 
-    if (object.hasOwnProperty(property)){
-      if (object.propertyIsEnumerable(property)){
+    if (hasOwnProperty(object, property)){
+      if (propertyIsEnumerable(object, property)){
         return true
       } else {
         return false
