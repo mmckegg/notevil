@@ -360,7 +360,7 @@ function propertyIsEnumerable(object, key){
 
 // determine if we have write access to a property
 function canSetProperty(object, property, primitives){
-  if (property === '__proto__' || primitives.isPrimative(object)){
+  if (property === '__proto__' || primitives.isPrimitive(object)){
     return false
   } else if (object != null){
 
