@@ -183,6 +183,14 @@ test('new', function(t){
   t.end()
 })
 
+test('let declaration', function(t){
+  t.equal(run('var x = 1; if (true) { let x = 3 }; x'), 1)
+  t.equal(run('var x = 0; for (let x=1;x<2;x++){ let x=100 }; x'), 0)
+  t.equal(run('var x = 0; for (var x=1;x<2;x++){ let x=100 }; x'), 2)
+  t.equal(run('var x = 0, k; for (let x=1;x<2;x++){ k=100+x }; k'), 101)
+  t.end()
+})
+
 test('try statement', function(t){
   t.deepEqual(run('var error; try{ __fail__.fail__() } catch(e) { error = e }; error'), ReferenceError())
   t.throws(function(){

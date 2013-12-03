@@ -47,11 +47,15 @@ function evaluateAst(tree, context){
   var safeFunction = FunctionFactory(context)
   var primitives = Primitives(context)
 
+  // block scoped context for catch (ex) and 'let'
+  var blockContext = context
+
   return walk(tree)
 
   // recursively walk every node in an array
   function walkAll(nodes){
     var result = null
+    enterBlock()
     for (var i=0;i<nodes.length;i++){
       var childNode = nodes[i]
       if (childNode.type === 'EmptyStatement') continue
@@ -62,6 +66,7 @@ function evaluateAst(tree, context){
         return result
       }
     }
+    leaveBlock()
     return result
   }
 
@@ -78,12 +83,12 @@ function evaluateAst(tree, context){
 
       case 'FunctionDeclaration':
         var params = node.params.map(getName)
-        var value = getFunction(node.body, params, context)
+        var value = getFunction(node.body, params, blockContext)
         return context[node.id.name] = value
 
       case 'FunctionExpression':
         var params = node.params.map(getName)
-        return getFunction(node.body, params, context)
+        return getFunction(node.body, params, blockContext)
       
       case 'ReturnStatement':
         var value = walk(node.argument)
@@ -99,17 +104,18 @@ function evaluateAst(tree, context){
         return walk(node.expression)
       
       case 'AssignmentExpression':
-        return setValue(context, node.left, node.right, node.operator)
+        return setValue(blockContext, node.left, node.right, node.operator)
       
       case 'UpdateExpression':
-        return setValue(context, node.argument, null, node.operator)
+        return setValue(blockContext, node.argument, null, node.operator)
       
       case 'VariableDeclaration':
         node.declarations.forEach(function(declaration){
-           if (declaration.init){
-            context[declaration.id.name] = walk(declaration.init)
+          var target = node.kind === 'let' ? blockContext : context
+          if (declaration.init){
+            target[declaration.id.name] = walk(declaration.init)
           } else {
-            context[declaration.id.name] = undefined
+            target[declaration.id.name] = undefined
           }
         })
         break
@@ -123,6 +129,7 @@ function evaluateAst(tree, context){
       
       case 'ForStatement':
         var infinite = InfiniteChecker(maxIterations)
+        enterBlock() // allow lets on delarations
         for (walk(node.init); walk(node.test); walk(node.update)){
           var result = walk(node.body)
 
@@ -135,6 +142,7 @@ function evaluateAst(tree, context){
 
           infinite.check()
         }
+        leaveBlock()
         break
 
       case 'ForInStatement':
@@ -142,13 +150,19 @@ function evaluateAst(tree, context){
         var value = walk(node.right)
         var property = node.left
 
+        var target = context
+        enterBlock()
+
         if (property.type == 'VariableDeclaration'){
           walk(property)
           property = property.declarations[0].id
+          if (property.kind === 'let'){
+            target = blockContext
+          }
         }
 
         for (var key in value){
-          setValue(context, property, {type: 'Literal', value: key})
+          setValue(target, property, {type: 'Literal', value: key})
           var result = walk(node.body)
 
           // handle early return, continue and break
@@ -160,6 +174,8 @@ function evaluateAst(tree, context){
 
           infinite.check()
         }
+        leaveBlock()
+
         break
 
       case 'WhileStatement':
@@ -174,11 +190,13 @@ function evaluateAst(tree, context){
         try {
           walk(node.block)
         } catch (error) {
+          enterBlock()
           var catchClause = node.handlers[0]
           if (catchClause) {
-            context[catchClause.param.name] = error
+            blockContext[catchClause.param.name] = error
             walk(catchClause.body)
           }
+          leaveBlock()
         } finally {
           if (node.finalizer) {
             walk(node.finalizer)
@@ -201,14 +219,14 @@ function evaluateAst(tree, context){
         }
       
       case 'ArrayExpression':
-        var obj = context['Array']()
+        var obj = blockContext['Array']()
         for (var i=0;i<node.elements.length;i++){
           obj.push(walk(node.elements[i]))
         }
         return obj
       
       case 'ObjectExpression':
-        var obj = context['Object']()
+        var obj = blockContext['Object']()
         for (var i = 0; i < node.properties.length; i++) {
           var prop = node.properties[i]
           var value = (prop.value === null) ? prop.value : walk(prop.value)
@@ -256,10 +274,14 @@ function evaluateAst(tree, context){
         }
       
       case 'ThisExpression':
-        return context['this']
+        return blockContext['this']
       
       case 'Identifier':
-        return finalValue(context[node.name])
+        if (hasProperty(blockContext, node.name, primitives)){
+          return finalValue(blockContext[node.name])
+        } else {
+          throw new ReferenceError(node.name + ' is not defined')
+        }
       
       case 'CallExpression':
         var args = node.arguments.map(function(arg){
@@ -298,6 +320,14 @@ function evaluateAst(tree, context){
       value = safeFunction
     }
     return finalValue(value)
+  }
+
+  // block scope context control
+  function enterBlock(){
+    blockContext = Object.create(blockContext)
+  } 
+  function leaveBlock(){
+    blockContext = Object.getPrototypeOf(blockContext)
   }
 
   // set a value in the specified context if allowed
@@ -346,6 +376,18 @@ function objectForKey(object, key, primitives){
     return object
   } else {
     return objectForKey(proto, key, primitives)
+  }
+}
+
+function hasProperty(object, key, primitives){
+  var proto = primitives.getPrototypeOf(object)
+  var hasOwn = hasOwnProperty(object, key)
+  if (object[key] !== undefined){
+    return true
+  } else if (!proto || hasOwn){
+    return hasOwn
+  } else {
+    return hasProperty(proto, key, primitives)
   }
 }
 
