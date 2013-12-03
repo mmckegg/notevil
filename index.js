@@ -368,7 +368,9 @@ function evaluateAst(tree, context){
 // when an unsupported expression is encountered, throw an error
 function unsupportedExpression(node){
   console.error(node)
-  throw new Error('Unsupported expression')
+  var err = new Error('Unsupported expression: ' + node.type) 
+  err.node = node
+  throw err
 }
 
 // walk a provided object's prototypal hierarchy to retrieve an inherited object
