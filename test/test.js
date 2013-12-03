@@ -198,3 +198,14 @@ test('try statement', function(t){
   })
   t.end()
 })
+
+test('switch statement', function(t){
+  var code = 'var r = []; switch (x) { case 1: r.push(1); break; case 2: r.push(2); case 3: r.push(3); break; default: r.push("default") } r'
+  t.deepEqual(run(code, {x: 1}), [1])
+  t.deepEqual(run(code, {x: 2}), [2, 3])
+  t.deepEqual(run(code, {x: 3}), [3])
+  t.deepEqual(run(code, {x: 4}), ['default'])
+
+  t.equal(run('function x(y) { switch(y) { case 1: return 1; case 2: return 2} } x(1)'), 1)
+  t.end()
+})

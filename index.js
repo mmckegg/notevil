@@ -55,18 +55,14 @@ function evaluateAst(tree, context){
   // recursively walk every node in an array
   function walkAll(nodes){
     var result = null
-    enterBlock()
     for (var i=0;i<nodes.length;i++){
       var childNode = nodes[i]
       if (childNode.type === 'EmptyStatement') continue
-
       result = walk(childNode)
-
       if (result instanceof ReturnValue){
         return result
       }
     }
-    leaveBlock()
     return result
   }
 
@@ -79,7 +75,10 @@ function evaluateAst(tree, context){
         return walkAll(node.body)
       
       case 'BlockStatement':
-        return walkAll(node.body)
+        enterBlock()
+        var result = walkAll(node.body)
+        leaveBlock()
+        return result
 
       case 'FunctionDeclaration':
         var params = node.params.map(getName)
@@ -120,6 +119,43 @@ function evaluateAst(tree, context){
         })
         break
       
+      case 'SwitchStatement':
+        var defaultHandler = null
+        var matched = false
+        var value = walk(node.discriminant)
+        var result = undefined
+
+        enterBlock()
+
+        var i = 0
+        while (result == null){
+          if (i<node.cases.length){
+            if (node.cases[i].test){ // check or fall through
+              matched = matched || (walk(node.cases[i].test) === value)
+            } else if (defaultHandler == null) {
+              defaultHandler = i
+            }
+            if (matched){
+              var r = walkAll(node.cases[i].consequent)
+              if (r instanceof ReturnValue){ // break out
+                if (r.type == 'break') break
+                result = r
+              }
+            }
+            i += 1 // continue
+          } else if (!matched && defaultHandler != null){
+            // go back and do the default handler
+            i = defaultHandler
+            matched = true
+          } else {
+            // nothing we can do
+            break
+          }
+        }
+
+        leaveBlock()
+        return result
+
       case 'IfStatement':
         if (walk(node.test)){
           return walk(node.consequent)
