@@ -129,24 +129,29 @@ function evaluateAst(tree, context){
       
       case 'ForStatement':
         var infinite = InfiniteChecker(maxIterations)
+        var result = undefined
+
         enterBlock() // allow lets on delarations
         for (walk(node.init); walk(node.test); walk(node.update)){
-          var result = walk(node.body)
+          var r = walk(node.body)
 
           // handle early return, continue and break
-          if (result instanceof ReturnValue){
-            if (result.type == 'continue') continue
-            if (result.type == 'break') break
-            return result
+          if (r instanceof ReturnValue){
+            if (r.type == 'continue') continue
+            if (r.type == 'break') break
+            result = r
+            break
           }
 
           infinite.check()
         }
         leaveBlock()
-        break
+        return result
 
       case 'ForInStatement':
         var infinite = InfiniteChecker(maxIterations)
+        var result = undefined
+
         var value = walk(node.right)
         var property = node.left
 
@@ -163,20 +168,21 @@ function evaluateAst(tree, context){
 
         for (var key in value){
           setValue(target, property, {type: 'Literal', value: key})
-          var result = walk(node.body)
+          var r = walk(node.body)
 
           // handle early return, continue and break
-          if (result instanceof ReturnValue){
-            if (result.type == 'continue') continue
-            if (result.type == 'break') break
-            return result
+          if (r instanceof ReturnValue){
+            if (r.type == 'continue') continue
+            if (r.type == 'break') break
+            result = r
+            break
           }
 
           infinite.check()
         }
         leaveBlock()
 
-        break
+        return result
 
       case 'WhileStatement':
         var infinite = InfiniteChecker(maxIterations)
