@@ -135,7 +135,7 @@ test('inner context shadow', function(t){
 })
 
 test('hoist functions', function(t){
-  var code = 'func(test); function func(arg){ return arg }'
+  var code = 'func("test"); function func(arg){ return arg }'
   t.doesNotThrow(function(){
     run(code)
   }, 'should not throw')
