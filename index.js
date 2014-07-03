@@ -23,9 +23,9 @@ function FunctionFactory(parentContext){
   var context = Object.create(parentContext || {})
   return function Function() {
     // normalize arguments array
-    arguments = Array.prototype.slice.call(arguments)
-    var src = arguments.slice(-1)[0]
-    var args = arguments.slice(0,-1)
+    var args = Array.prototype.slice.call(arguments)
+    var src = args.slice(-1)[0]
+    args = args.slice(0,-1)
     if (typeof src === 'string'){
       //HACK: esprima doesn't like returns outside functions
       src = parse('function a(){' + src + '}').body[0].body
@@ -70,10 +70,10 @@ function evaluateAst(tree, context){
   function walk(node){
     if (!node) return
     switch (node.type) {
-      
+
       case 'Program':
         return walkAll(node.body)
-      
+
       case 'BlockStatement':
         enterBlock()
         var result = walkAll(node.body)
@@ -88,7 +88,7 @@ function evaluateAst(tree, context){
       case 'FunctionExpression':
         var params = node.params.map(getName)
         return getFunction(node.body, params, blockContext)
-      
+
       case 'ReturnStatement':
         var value = walk(node.argument)
         return new ReturnValue('return', value)
@@ -98,16 +98,16 @@ function evaluateAst(tree, context){
 
       case 'ContinueStatement':
         return new ReturnValue('continue')
-      
+
       case 'ExpressionStatement':
         return walk(node.expression)
-      
+
       case 'AssignmentExpression':
         return setValue(blockContext, node.left, node.right, node.operator)
-      
+
       case 'UpdateExpression':
         return setValue(blockContext, node.argument, null, node.operator)
-      
+
       case 'VariableDeclaration':
         node.declarations.forEach(function(declaration){
           var target = node.kind === 'let' ? blockContext : context
@@ -118,7 +118,7 @@ function evaluateAst(tree, context){
           }
         })
         break
-      
+
       case 'SwitchStatement':
         var defaultHandler = null
         var matched = false
@@ -162,7 +162,7 @@ function evaluateAst(tree, context){
         } else if (node.alternate) {
           return walk(node.alternate)
         }
-      
+
       case 'ForStatement':
         var infinite = InfiniteChecker(maxIterations)
         var result = undefined
@@ -245,10 +245,10 @@ function evaluateAst(tree, context){
           }
         }
         break
-      
+
       case 'Literal':
         return node.value
-      
+
       case 'UnaryExpression':
         var val = walk(node.argument)
         switch(node.operator) {
@@ -259,14 +259,14 @@ function evaluateAst(tree, context){
           case 'typeof': return typeof val
           default: return unsupportedExpression(node)
         }
-      
+
       case 'ArrayExpression':
         var obj = blockContext['Array']()
         for (var i=0;i<node.elements.length;i++){
           obj.push(walk(node.elements[i]))
         }
         return obj
-      
+
       case 'ObjectExpression':
         var obj = blockContext['Object']()
         for (var i = 0; i < node.properties.length; i++) {
@@ -283,7 +283,7 @@ function evaluateAst(tree, context){
         var target = walk(node.callee)
         return primitives.applyNew(target, args)
 
-      
+
       case 'BinaryExpression':
         var l = walk(node.left)
         var r = walk(node.right)
@@ -314,10 +314,10 @@ function evaluateAst(tree, context){
           case '||':  return walk(node.left) || walk(node.right)
           default: return unsupportedExpression(node)
         }
-      
+
       case 'ThisExpression':
         return blockContext['this']
-      
+
       case 'Identifier':
         if (node.name === 'undefined'){
           return undefined
@@ -326,7 +326,7 @@ function evaluateAst(tree, context){
         } else {
           throw new ReferenceError(node.name + ' is not defined')
         }
-      
+
       case 'CallExpression':
         var args = node.arguments.map(function(arg){
           return walk(arg)
@@ -338,7 +338,7 @@ function evaluateAst(tree, context){
           object = walk(node.callee.object)
         }
         return target.apply(object, args)
-      
+
       case 'MemberExpression':
         var obj = walk(node.object)
         if (node.computed){
@@ -348,11 +348,11 @@ function evaluateAst(tree, context){
         }
         obj = primitives.getPropertyObject(obj, prop)
         return checkValue(obj[prop]);
-      
+
       case 'ConditionalExpression':
         var val = walk(node.test)
         return val ? walk(node.consequent) : walk(node.alternate)
-      
+
       default:
         return unsupportedExpression(node)
     }
@@ -369,7 +369,7 @@ function evaluateAst(tree, context){
   // block scope context control
   function enterBlock(){
     blockContext = Object.create(blockContext)
-  } 
+  }
   function leaveBlock(){
     blockContext = Object.getPrototypeOf(blockContext)
   }
@@ -410,7 +410,7 @@ function evaluateAst(tree, context){
 // when an unsupported expression is encountered, throw an error
 function unsupportedExpression(node){
   console.error(node)
-  var err = new Error('Unsupported expression: ' + node.type) 
+  var err = new Error('Unsupported expression: ' + node.type)
   err.node = node
   throw err
 }
@@ -477,10 +477,10 @@ function getFunction(body, params, parentContext){
       context['this'] = this
     }
     // normalize arguments array
-    arguments = Array.prototype.slice.call(arguments)
+    var args = Array.prototype.slice.call(arguments)
     context['arguments'] = arguments
-    arguments.forEach(function(arg,idx){
-      param = params[idx]
+    args.forEach(function(arg,idx){
+      var param = params[idx]
       if (param){
         context[param] = arg
       }
