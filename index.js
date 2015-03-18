@@ -353,6 +353,9 @@ function evaluateAst(tree, context){
         var val = walk(node.test)
         return val ? walk(node.consequent) : walk(node.alternate)
 
+      case 'EmptyStatement':
+        return
+
       default:
         return unsupportedExpression(node)
     }
