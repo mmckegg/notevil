@@ -54,3 +54,16 @@ test('simple object', function(t){
   t.deepEqual(result, {a:0})
   t.end()
 })
+
+test('empty string', function (t){
+  var result = run('')
+  t.deepEqual(result, undefined) //same as eval('')
+  t.end()
+})
+
+test('semicolon', function (t){
+  var result = run(';')
+  t.deepEqual(result, undefined) //same as eval(';')
+  t.end()
+})
+
