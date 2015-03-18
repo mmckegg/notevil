@@ -54,7 +54,7 @@ function evaluateAst(tree, context){
 
   // recursively walk every node in an array
   function walkAll(nodes){
-    var result = null
+    var result = undefined
     for (var i=0;i<nodes.length;i++){
       var childNode = nodes[i]
       if (childNode.type === 'EmptyStatement') continue
