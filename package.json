@@ -1,6 +1,6 @@
 {
   "name": "notevil",
-  "version": "0.8.1",
+  "version": "1.0.0",
   "description": "Evalulate javascript like the built-in eval() method but safely",
   "main": "index.js",
   "scripts": {
