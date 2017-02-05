@@ -4,7 +4,7 @@
   "description": "Evalulate javascript like the built-in eval() method but safely",
   "main": "index.js",
   "scripts": {
-    "test": "tap test/*.js"
+    "test": "tape test/*.js"
   },
   "repository": {
     "type": "git",

@@ -250,14 +250,22 @@ function evaluateAst(tree, context){
         return node.value
 
       case 'UnaryExpression':
-        var val = walk(node.argument)
-        switch(node.operator) {
-          case '+': return +val
-          case '-': return -val
-          case '~': return ~val
-          case '!': return !val
-          case 'typeof': return typeof val
-          default: return unsupportedExpression(node)
+        if (node.operator === 'delete' && node.argument.type === 'MemberExpression') {
+          var arg = node.argument
+          var parent = walk(arg.object)
+          var prop = arg.computed ? walk(arg.property) : arg.property.name
+          delete parent[prop]
+          return true
+        } else {
+          var val = walk(node.argument)
+          switch(node.operator) {
+            case '+': return +val
+            case '-': return -val
+            case '~': return ~val
+            case '!': return !val
+            case 'typeof': return typeof val
+            default: return unsupportedExpression(node)
+          }
         }
 
       case 'ArrayExpression':
