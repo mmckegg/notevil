@@ -296,7 +296,7 @@ function evaluateAst(tree, context){
         var l = walk(node.left)
         var r = walk(node.right)
         switch(node.operator) {
-          case '==':  return l === r
+          case '==':  return l == r
           case '===': return l === r
           case '!=':  return l != r
           case '!==': return l !== r
