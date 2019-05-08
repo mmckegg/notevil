@@ -495,7 +495,7 @@ function getFunction(body, params, parentContext, traceNode){
     return function(){
       try {
         var context = Object.create(parentContext)
-        if (this == global){=
+        if (this == global){
           context['this'] = null
         } else {
           context['this'] = this
