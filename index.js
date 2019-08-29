@@ -352,7 +352,7 @@ function evaluateAst(tree, context){
           if (node.callee.type === 'MemberExpression'){
             object = walk(node.callee.object)
           }
-          return target.apply(object, args)
+          return checkValue(target.apply(object, args))
   
         case 'MemberExpression':
           var obj = walk(node.object)

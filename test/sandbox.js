@@ -79,3 +79,18 @@ test('set wrapped object prototype by object.__proto__', function(t){
   }, 'original object prototype untouched')
   t.end()
 })
+
+test('prevent access to Function via function call', function(t){
+  var code = "" +
+    "function fn() {};" +
+    "var constructorProperty = Object.getOwnPropertyDescriptors(fn.__proto__).constructor;" +
+    "var properties = Object.values(constructorProperty);" +
+    "properties.pop();" +
+    "properties.pop();" +
+    "properties.pop();" +
+    "var Function = properties.pop();" +
+    "(Function('return this'))()"
+  t.notEqual(safeEval(code), global)
+  t.equal(safeEval(code), null)
+  t.end()
+})
