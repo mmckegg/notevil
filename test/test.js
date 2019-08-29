@@ -192,7 +192,7 @@ test('let declaration', function(t){
 })
 
 test('try statement', function(t){
-  t.deepEqual(run('var error; try{ __fail__.fail__() } catch(e) { error = e }; error'), ReferenceError())
+  t.ok(run('var error; try{ __fail__.fail__() } catch(e) { error = e }; error') instanceof ReferenceError)
   t.throws(function(){
     run('var error; try{ __fail__.fail__() } catch(e) { error = e }; e')
   })
