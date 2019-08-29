@@ -27,6 +27,6 @@
     "hoister": "~0.0"
   },
   "devDependencies": {
-    "tape": "*"
+    "tape": "^4.11.0"
   }
 }
