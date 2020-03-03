@@ -94,3 +94,18 @@ test('prevent access to Function via function call', function(t){
   t.equal(safeEval(code), null)
   t.end()
 })
+
+test('prevent access to Function via function call (bound)', function(t){
+  var code = "" +
+    "function fn() {};" +
+    "var constructorProperty = Object.getOwnPropertyDescriptors(fn.__proto__).constructor;" +
+    "var properties = Object.values(constructorProperty);" +
+    "properties.pop();" +
+    "properties.pop();" +
+    "properties.pop();" +
+    "var Func = properties.map(function (x) {return x.bind(x, 'return this')}).pop();" +
+    "(Func())()"
+  t.notEqual(safeEval(code), global)
+  t.equal(safeEval(code), null)
+  t.end()
+})
