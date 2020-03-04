@@ -337,7 +337,7 @@ function evaluateAst(tree, context){
           if (node.name === 'undefined'){
             return undefined
           } else if (hasProperty(blockContext, node.name, primitives)){
-            return finalValue(blockContext[node.name])
+            return checkValue(blockContext[node.name])
           } else {
             throw new ReferenceError(node.name + ' is not defined')
           }
