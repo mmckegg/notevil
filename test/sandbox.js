@@ -109,3 +109,9 @@ test('prevent access to Function via function call (bound)', function(t){
   t.equal(safeEval(code), null)
   t.end()
 })
+
+test('prevent access to Function prototype', function(t){
+  safeEval("try{a[b];}catch(e){e.constructor.constructor('return __proto__.arguments.callee.__proto__.polluted=true')()};")
+  t.equal(Function.polluted, undefined)
+  t.end()
+})
