@@ -53,7 +53,6 @@ test('infinite while loop', function(t){
   t.end()
 })
 
-
 test('infinite while loop timeout', function(t){
   t.throws(function(){
     safeEval('while (true){}', {}, {timeout: 100, maxIterations: 0})
