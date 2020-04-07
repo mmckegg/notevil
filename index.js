@@ -23,20 +23,6 @@ function safeEval(src, parentContext, _options={}){
   var tree = prepareAst(src)
   var context = Object.create(parentContext || {})
   return finalValue(evaluateAst(tree, context, options))
-  
-}
-
-if (self.document === undefined) {
-  self.onmessage = function ({src, parentContext, timeout, cmd="exe"}) {
-    switch(cmd) {
-      case 'exe': 
-        self.postMessage(safeEval(src, parentContext, { maxIterations: 0 }))
-        break
-      case 'compile':
-        self.postMessage(prepareAst(src))
-        break
-    } 
-  }
 }
 
 function compile(src) {
