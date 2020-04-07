@@ -6,8 +6,6 @@ var Primitives = require('./lib/primitives')
 
 var self = this
 
-var getNow = self.performance ? self.performance.now : process.uptime
-
 module.exports = safeEval
 module.exports.eval = safeEval
 module.exports.compile = compile
@@ -22,7 +20,6 @@ function safeEval(src, parentContext, _options={}){
     maxIterations: _options.maxIteration ? _options.maxIteration : MAX_ITERATIONS_DEFAULT,
     timeout: _options.timeout ? _options.timeout : 0
   }, _options)
-  options.timeout = options.timeout / (self.performance ? 1 : 1000)
   var tree = prepareAst(src)
   var context = Object.create(parentContext || {})
   return finalValue(evaluateAst(tree, context, options))
@@ -72,7 +69,7 @@ function prepareAst(src){
 
 // evaluate an AST in the given context
 function evaluateAst(tree, context, options){
-  var startTime =  getNow()
+  var startTime =  new Date().getTime()
   var isTimeout = options.timeout ? options.timeout > 0 : false
 
   var safeFunction = FunctionFactory(context)
@@ -100,7 +97,7 @@ function evaluateAst(tree, context, options){
   // recursively evalutate the node of an AST
   function walk(node, traceNode){
     if (isTimeout){
-      if (getNow() - startTime > options.timeout){
+      if (new Date().getTime() - startTime > options.timeout){
         throw new Error('Execution time')
       }
     }
