@@ -53,6 +53,13 @@ test('infinite while loop', function(t){
   t.end()
 })
 
+test('infinite while loop timeout', function(t){
+  t.throws(function(){
+    safeEval('while (true){}', {}, {timeout: 100, maxIterations: 0})
+  })
+  t.end()
+})
+
 test('set wrapped string prototype', function(t){
   var code = 'String.prototype.makeLouder = function() { return this + "!" }; "test".makeLouder()'
   t.equal(safeEval(code), 'test!')

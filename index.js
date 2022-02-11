@@ -4,18 +4,30 @@ var hoist = require('hoister')
 var InfiniteChecker = require('./lib/infinite-checker')
 var Primitives = require('./lib/primitives')
 
+var self = this
+
 module.exports = safeEval
 module.exports.eval = safeEval
+module.exports.compile = compile
 module.exports.FunctionFactory = FunctionFactory
 module.exports.Function = FunctionFactory()
 
-var maxIterations = 1000000
+var MAX_ITERATIONS_DEFAULT = 1000000
 
 // 'eval' with a controlled environment
-function safeEval(src, parentContext){
+function safeEval(src, parentContext, _options={}){
+  const options = Object.assign({
+    maxIterations: _options.maxIteration ? _options.maxIteration : MAX_ITERATIONS_DEFAULT,
+    timeout: _options.timeout ? _options.timeout : 0
+  }, _options)
   var tree = prepareAst(src)
   var context = Object.create(parentContext || {})
-  return finalValue(evaluateAst(tree, context))
+  return finalValue(evaluateAst(tree, context, options))
+}
+
+function compile(src) {
+  var tree = prepareAst(src)
+  return tree
 }
 
 // create a 'Function' constructor for a controlled environment
@@ -42,7 +54,9 @@ function prepareAst(src){
 }
 
 // evaluate an AST in the given context
-function evaluateAst(tree, context){
+function evaluateAst(tree, context, options){
+  var startTime =  new Date().getTime()
+  var isTimeout = options.timeout ? options.timeout > 0 : false
 
   var safeFunction = FunctionFactory(context)
   var primitives = Primitives(context)
@@ -68,6 +82,11 @@ function evaluateAst(tree, context){
 
   // recursively evalutate the node of an AST
   function walk(node, traceNode){
+    if (isTimeout){
+      if (new Date().getTime() - startTime > options.timeout){
+        throw new Error('Execution time')
+      }
+    }
     try {
       if (!node) return
       switch (node.type) {
@@ -171,7 +190,7 @@ function evaluateAst(tree, context){
           }
   
         case 'ForStatement':
-          var infinite = InfiniteChecker(maxIterations)
+          var infinite = InfiniteChecker(options.maxIterations)
           var result = undefined
   
           enterBlock() // allow lets on delarations
@@ -192,7 +211,7 @@ function evaluateAst(tree, context){
           return result
   
         case 'ForInStatement':
-          var infinite = InfiniteChecker(maxIterations)
+          var infinite = InfiniteChecker(options.maxIterations)
           var result = undefined
   
           var value = walk(node.right)
@@ -228,7 +247,7 @@ function evaluateAst(tree, context){
           return result
   
         case 'WhileStatement':
-          var infinite = InfiniteChecker(maxIterations)
+          var infinite = InfiniteChecker(options.maxIterations)
           while (walk(node.test)){
             walk(node.body)
             infinite.check()
@@ -509,7 +528,7 @@ function getFunction(body, params, parentContext, traceNode){
             context[param] = arg
           }
         })
-        var result = evaluateAst(body, context)
+        var result = evaluateAst(body, context, {timeout: 0, maxIterations: MAX_ITERATIONS_DEFAULT})
     
         if (result instanceof ReturnValue){
           return result.value
